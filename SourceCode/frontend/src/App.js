@@ -18,7 +18,7 @@ import Typography from "@mui/material/Typography";
 import Stepper from "@mui/material/Stepper";
 import Step from "@mui/material/Step";
 import StepLabel from "@mui/material/StepLabel";
-
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
@@ -61,7 +61,7 @@ export default function App() {
     try {
       setStatus("Starting observer...");
       const res = await axios.post("http://localhost:9000/click-button");
-      setStatus(res.data.success ? "Observer running" : "Failed");
+      setStatus(res.data.success ? "Running..." : "Failed");
     } catch {
       setStatus("Error");
     }
@@ -100,6 +100,7 @@ export default function App() {
       const res = await axios.get("http://localhost:9000/round-history");
       //saveGameRound("23-01-2025", "3:56:12 PM", 2.31);
       if (res.data.success) {
+        setStatus(res.data.success ? "Running..." : "Failed");
         setRounds(res.data.history);
         const data = res.data.history;
         const lastDateObj = data[data.length - 1];
@@ -111,7 +112,11 @@ export default function App() {
         checkLast10ForOne(today, timeArray);
 
         // Firebase save data based on 10th ele or 11th ele
-        const ele10 = Object.values(timeArray[timeArray.length - 16]);
+        //const ele10 = Object.values(timeArray[timeArray.length - 16]);
+
+        const ele10 = Number(
+          Object.values(timeArray[timeArray.length - 16] || {})[0] || 0,
+        );
         const firstLen = ele10.toString().split(".")[0]?.length || 0;
         // console.log(ele10[0]);
 
@@ -119,7 +124,11 @@ export default function App() {
 
         const getCompArr = timeArray.slice(-17);
         if (ele10[0] > 1 && ele10[0] < 1.2) saveGameRound(today, getCompArr);
-        if (ele10[0] > 100) threeRound(today, getCompArr);
+
+        if (ele10 > 100) {
+          console.log("Trigger threeRound:", ele10);
+          threeRound(today, getCompArr);
+        }
         /// Onclick condition
 
         const currentFirst = Object.values(timeArray[timeArray.length - 1])[0];
@@ -294,6 +303,11 @@ export default function App() {
   const toggleDrawer = (newOpen) => () => {
     setOpen(newOpen);
   };
+  // Total
+  const [openTotal, setOpenTotal] = useState(false);
+  const toggleDrawerTotal = (newOpen) => () => {
+    setOpenTotal(newOpen);
+  };
   // Daily data
   const [dailyTarget, setDailyTarget] = useState("0/0");
   const [dailyTotal, setDailyTotal] = useState(0);
@@ -330,7 +344,7 @@ export default function App() {
 
     return Math.round((x / y) * 100);
   };
-
+  // Continused data
   const DrawerList = (
     <Box sx={{ height: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <div
@@ -397,6 +411,7 @@ export default function App() {
       </div>
     </Box>
   );
+
   // Note Data - Selecting time frame
   const timeToMinutes = (timeStr) => {
     const [time, modifier] = timeStr.split(" ");
@@ -659,18 +674,114 @@ export default function App() {
       setSelectedKey(rows[0].key);
     }
   }, [rows]);
+  //
+  const DrawlistTotal = (
+    <Card
+      sx={{ marginBottom: "15px", width: "500px" }}
+      onClick={toggleDrawerTotal(false)}
+    >
+      <Toolbar className="card-header">
+        <Typography variant="h6" className="card-title">
+          Daily History
+        </Typography>
+      </Toolbar>
+
+      <CardContent className="payment">
+        <Toolbar className="card-header">
+          <Typography variant="caption">
+            Total <span>({totalCount} × 2)</span>
+          </Typography>
+          <span>{formatIndian(totalCount * price)}</span>
+        </Toolbar>
+
+        <Toolbar className="card-header">
+          <Typography variant="caption">
+            Between 2 to 3 <span>({between23}× 1)</span>
+          </Typography>
+          <span>{formatIndian(between23 * price)}</span>
+        </Toolbar>
+
+        <Toolbar className="card-header">
+          <Typography variant="caption">
+            Greater than 3 <span>({greater3} × 2)</span>
+          </Typography>
+          <span>{formatIndian(greater3 * 2 * price)}</span>
+        </Toolbar>
+
+        <Toolbar className="card-header">
+          <Typography variant="caption">
+            Failed <span>({failed} × 2)</span>
+          </Typography>
+          <span>{formatIndian(failed * 2 * price)}</span>
+        </Toolbar>
+
+        <Toolbar className="card-header">
+          <span />
+          <Typography
+            variant="h5"
+            color={net >= 0 ? "success.main" : "error.main"}
+          >
+            ₹ {formatIndian(net)}
+          </Typography>
+        </Toolbar>
+      </CardContent>
+    </Card>
+  );
   return (
     <Grid container spacing={2}>
-      <Grid container size={{ xs: 12, md: 12 }}>
-        <Grid size={{ xs: 12, md: 12 }}>
-          <Card
+      <IconButton
+        aria-label="data"
+        onClick={toggleDrawer(true)}
+        sx={{
+          backgroundColor: "#1480ec",
+          position: "fixed",
+          bottom: "10px",
+          left: "10px",
+          color: "#fff",
+          padding: "16px",
+          zIndex: "99",
+          boxShadow: "1px 1px 1px #eee",
+        }}
+      >
+        <BrowserUpdatedIcon />
+      </IconButton>
+      <Grid
+        container
+        size={{ xs: 12, md: 12 }}
+        sx={{ background: "#fff", padding: "10px" }}
+      >
+        <Grid
+          size={{ xs: 12, md: 12 }}
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: "column",
+            alignItems: "end",
+          }}
+        >
+          <Box
             sx={{
-              marginBottom: "15px",
               display: "flex",
-              alignItems: "end",
-              justifyContent: "end",
+              alignItems: "center",
             }}
           >
+            <>
+              {/* <p style={{ marginRight: "6px" }}>{status}</p> */}
+              <Typography
+                variant="caption"
+                gutterBottom
+                sx={{ display: "block", color: "green", marginRight: "16px" }}
+              >
+                {status}
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={startObserver}
+                sx={{ maxHeight: "42px", textTransform: "capitalize" }}
+              >
+                Start Observer
+              </Button>
+            </>
             <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
               <InputLabel id="target-label"> Collection</InputLabel>
               <Select
@@ -682,25 +793,8 @@ export default function App() {
                 <MenuItem value="ThreeNumber">ThreeNumber</MenuItem>
               </Select>
             </FormControl>
-            <FormControl size="small" sx={{ m: 1 }}>
-              <InputLabel>Target</InputLabel>
-              <Select
-                value={selectedKey}
-                label="Target"
-                onChange={(e) => setSelectedKey(e.target.value)}
-              >
-                {rows.map((r) => (
-                  <MenuItem key={r.key} value={r.key}>
-                    {r.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <FormControl
-              sx={{ m: 1, minWidth: 120 }}
-              size="small"
-              align="right"
-            >
+
+            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
               <InputLabel id="demo-select-small-label"> Day</InputLabel>
               <Select
                 labelId="demo-select-small-label"
@@ -738,7 +832,7 @@ export default function App() {
                 <MenuItem value="10000">10000</MenuItem>;
               </Select>
             </FormControl>
-          </Card>
+          </Box>
         </Grid>
       </Grid>
       <SwipeableDrawer
@@ -748,124 +842,14 @@ export default function App() {
       >
         {DrawerList}
       </SwipeableDrawer>
+      <SwipeableDrawer
+        open={openTotal}
+        anchor="right"
+        onClose={toggleDrawerTotal(false)}
+      >
+        {DrawlistTotal}
+      </SwipeableDrawer>
       <Grid container size={{ xs: 12, md: 9 }}>
-        <Grid container size={{ xs: 12, md: 12 }}>
-          <Grid container size={{ xs: 12, md: 12 }}>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card sx={{ marginBottom: "15px" }}>
-                <Toolbar className="card-header">
-                  <Typography variant="h6" className="card-title">
-                    Playwright Observer
-                  </Typography>
-                  <IconButton aria-label="data" onClick={toggleDrawer(true)}>
-                    <BrowserUpdatedIcon />
-                  </IconButton>
-                </Toolbar>
-                <CardContent
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexWrap: "wrap",
-                    flexDirection: "column",
-                  }}
-                >
-                  <div
-                    style={{
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <Button variant="contained" onClick={startObserver}>
-                      Start Observer
-                    </Button>
-                    <p>
-                      Status: <b>{status}</b>
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card sx={{ marginBottom: "15px" }}>
-                <Toolbar className="card-header">
-                  <Typography variant="h6" className="card-title">
-                    Daily History
-                  </Typography>
-                </Toolbar>
-
-                <CardContent className="payment">
-                  <Toolbar className="card-header">
-                    <Typography variant="caption">
-                      Total <span>({totalCount} × 2)</span>
-                    </Typography>
-                    <span>{formatIndian(totalCount * price)}</span>
-                  </Toolbar>
-
-                  <Toolbar className="card-header">
-                    <Typography variant="caption">
-                      Between 2 to 3 <span>({between23}× 1)</span>
-                    </Typography>
-                    <span>{formatIndian(between23 * price)}</span>
-                  </Toolbar>
-
-                  <Toolbar className="card-header">
-                    <Typography variant="caption">
-                      Greater than 3 <span>({greater3} × 2)</span>
-                    </Typography>
-                    <span>{formatIndian(greater3 * 2 * price)}</span>
-                  </Toolbar>
-
-                  <Toolbar className="card-header">
-                    <Typography variant="caption">
-                      Failed <span>({failed} × 2)</span>
-                    </Typography>
-                    <span>{formatIndian(failed * 2 * price)}</span>
-                  </Toolbar>
-
-                  <Toolbar className="card-header">
-                    <span />
-                    <Typography
-                      variant="h5"
-                      color={net >= 0 ? "success.main" : "error.main"}
-                    >
-                      ₹ {formatIndian(net)}
-                    </Typography>
-                  </Toolbar>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Card sx={{ marginBottom: "15px" }}>
-                <Toolbar className="card-header">
-                  <Typography variant="h6" align="left" className="card-title">
-                    Today Trends
-                  </Typography>
-                </Toolbar>
-                <CardContent>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <PieChart
-                      series={[
-                        {
-                          innerRadius: 80,
-                          outerRadius: 100,
-                          data: chatData ?? [],
-                        },
-                      ]}
-                      legend={{ hidden: true }}
-                      width={250}
-                      height={220}
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-        </Grid>
         <Grid container size={{ xs: 12, md: 12, height: "50vh" }}>
           <Grid container size={{ xs: 12, md: 12 }}>
             <Card sx={{ marginBottom: "15px", width: "100%" }}>
@@ -1000,8 +984,64 @@ export default function App() {
           </Grid>
           <Grid container size={3} xs={12}></Grid>
         </Grid>
+        <Grid container size={{ xs: 12, md: 12 }}>
+          <Grid container size={{ xs: 12, md: 12 }}>
+            <Grid size={{ xs: 12, md: 4 }}></Grid>
+          </Grid>
+        </Grid>
       </Grid>
       <Grid container size={{ xs: 12, md: 3 }} sx={{ height: "100vh" }}>
+        <Grid size={{ xs: 12, md: 12 }}>
+          <Card sx={{ marginBottom: "15px" }}>
+            <Toolbar className="card-header">
+              <Typography variant="h6" align="left" className="card-title">
+                Today Trends
+              </Typography>
+
+              <Toolbar
+                className="card-header"
+                sx={{ padding: "0px !important" }}
+              >
+                <FormControl size="small" sx={{ m: 1 }}>
+                  <InputLabel>Target</InputLabel>
+                  <Select
+                    value={selectedKey}
+                    label="Target"
+                    onChange={(e) => setSelectedKey(e.target.value)}
+                  >
+                    {rows.map((r) => (
+                      <MenuItem key={r.key} value={r.key}>
+                        {r.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <IconButton
+                  aria-label="Total"
+                  onClick={toggleDrawerTotal(true)}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </Toolbar>
+            </Toolbar>
+            <CardContent>
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                <PieChart
+                  series={[
+                    {
+                      innerRadius: 80,
+                      outerRadius: 100,
+                      data: chatData ?? [],
+                    },
+                  ]}
+                  legend={{ hidden: true }}
+                  width={250}
+                  height={220}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
         <Card
           sx={{
             marginBottom: "15px",
