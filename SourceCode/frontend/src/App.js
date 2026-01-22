@@ -48,6 +48,7 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import Accordion from "@mui/material/Accordion";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Checkbox from "@mui/material/Checkbox";
+import Fab from "@mui/material/Fab";
 export default function App() {
   const [status, setStatus] = useState("Idle");
   const [rounds, setRounds] = useState([]);
@@ -729,7 +730,7 @@ export default function App() {
   );
   return (
     <Grid container spacing={2}>
-      <IconButton
+      {/* <IconButton
         aria-label="data"
         onClick={toggleDrawer(true)}
         sx={{
@@ -744,7 +745,19 @@ export default function App() {
         }}
       >
         <BrowserUpdatedIcon />
-      </IconButton>
+      </IconButton> */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={toggleDrawer(true)}
+        sx={{
+          position: "fixed",
+          bottom: "10px",
+          left: "10px",
+        }}
+      >
+        <BrowserUpdatedIcon />
+      </Fab>
       <Grid
         container
         size={{ xs: 12, md: 12 }}
