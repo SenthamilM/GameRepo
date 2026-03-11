@@ -49,11 +49,14 @@ import Accordion from "@mui/material/Accordion";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Checkbox from "@mui/material/Checkbox";
 import Fab from "@mui/material/Fab";
+import { newGame } from "./newGame";
+import noData from "../src/no-data.avif";
 export default function App() {
   const [status, setStatus] = useState("Idle");
   const [rounds, setRounds] = useState([]);
-  const [selectCollection, setSelectCollection] = useState("ThreeNumber");
+  const [selectCollection, setSelectCollection] = useState("NewGame");
   const [autocall, setAutoCall] = useState(0);
+  let fiveCount = 0;
   const today = new Date();
   const formattedDate = `${String(today.getDate()).padStart(2, "0")}-${String(
     today.getMonth() + 1,
@@ -123,14 +126,64 @@ export default function App() {
 
         //const firstStr = ele10.toString();
 
-        const getCompArr = timeArray.slice(-17);
-        if (ele10[0] > 1 && ele10[0] < 1.2) saveGameRound(today, getCompArr);
-
-        if (ele10 > 100) {
-          console.log("Trigger threeRound:", ele10);
-          threeRound(today, getCompArr);
+        const ele0 = Number(
+          Object.values(timeArray[timeArray.length - 1] || {})[0] || 0,
+        );
+        const ele1 = Number(
+          Object.values(timeArray[timeArray.length - 2] || {})[0] || 0,
+        );
+        const targetEle = Number(
+          Object.values(timeArray[timeArray.length - 6] || {})[0] || 0,
+        );
+        const targetBeforeEle = Number(
+          Object.values(timeArray[timeArray.length - 7] || {})[0] || 0,
+        );
+        const sampleData = {
+          "10:16:57 AM": {
+            target: 100,
+            before: 2.2,
+            data: [
+              {
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+              },
+              {
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+                "10:16:57 AM": 44.42,
+              },
+            ],
+          },
+        };
+        if (selectCollection == "NewGame") {
+          const getCompArr = timeArray.slice(-11);
+          const TargetSession = sessionStorage.getItem("Target");
+          const BeforeSession = sessionStorage.getItem("Before");
+          //const arrEle = [];
+          if (targetEle > 50) {
+            sessionStorage.setItem("Target", targetEle);
+            sessionStorage.setItem("Before", targetBeforeEle);
+          }
+          if (targetEle === 1) {
+            sessionStorage.removeItem("Target");
+            sessionStorage.removeItem("Before");
+          }
+          if (
+            String(targetBeforeEle).split(".")[0] ===
+            BeforeSession.split(".")[0]
+          ) {
+            getCompArr.push({ Target: TargetSession });
+            getCompArr.push({ before: BeforeSession });
+            newGame(today, getCompArr);
+            console.log("New Data");
+          }
         }
-        /// Onclick condition
+        /// Onclick condition Nee Game
+
+        /// Onclick condition THreeNUmber
 
         const currentFirst = Object.values(timeArray[timeArray.length - 1])[0];
         // const current6 = Object.values(timeArray[timeArray.length - 5])[0];
@@ -155,7 +208,7 @@ export default function App() {
               );
 
               if (targetFirst[0] > 100) {
-                console.log("Trigger:", index + 2, targetFirst[0]);
+                //console.log("Trigger:", index + 2, targetFirst[0]);
                 handleClick();
               }
               // if (current13 > 100 && current6 > 2) {
@@ -263,6 +316,7 @@ export default function App() {
   }, [data, order]);
 
   const filteredData = useMemo(() => {
+    //console.log(sortedData);
     return sortedData.filter(([, rounds]) => {
       const beforeFirst = Object.values(rounds?.[0] ?? {})[0];
       const targetFirst = Object.values(rounds?.[1] ?? {})[0];
@@ -453,10 +507,15 @@ export default function App() {
     "rgba(116, 77, 169)",
   ];
   const rows = useMemo(() => {
+    if (!selectCollection || !COLLECTION_CONFIG[selectCollection]) {
+      return []; // prevent crash
+    }
+
     const cfg = COLLECTION_CONFIG[selectCollection];
 
     return Array.from({ length: cfg.endIndex - cfg.startIndex + 1 }, (_, i) => {
       const pos = cfg.labelStart + i;
+
       return {
         key: `pos_${pos}`,
         label: `${pos}th`,
@@ -538,7 +597,7 @@ export default function App() {
   const [targetVal, setTargetVal] = useState(0);
   const handleTarget = (e) => {
     setTargetVal(e.target.value);
-    console.log(e.target.value);
+    // console.log(e.target.value);
   };
   const chatData = [
     {
@@ -675,7 +734,7 @@ export default function App() {
       setSelectedKey(rows[0].key);
     }
   }, [rows]);
-  //
+
   const DrawlistTotal = (
     <Card
       sx={{ marginBottom: "15px", width: "500px" }}
@@ -804,6 +863,7 @@ export default function App() {
               >
                 <MenuItem value="Onepointone">Onepointone</MenuItem>
                 <MenuItem value="ThreeNumber">ThreeNumber</MenuItem>
+                <MenuItem value="NewGame">NewGame</MenuItem>
               </Select>
             </FormControl>
 
@@ -882,116 +942,76 @@ export default function App() {
                     Daily Data
                   </Typography>
                 </Toolbar>
-                <Table sx={{ width: "100%" }}>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell colSpan={4}>Target</TableCell>
-                      {rows.map((row, index) => {
-                        return (
+                {filteredData != "" ? (
+                  <Table sx={{ width: "100%" }}>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>S.No</TableCell>
+                        <TableCell>Time</TableCell>
+
+                        <TableCell align="center">Before</TableCell>
+                        <TableCell align="center">Target</TableCell>
+                        {Array.from({ length: 11 }, (_, roundIndex) => (
+                          <TableCell align="center" key={roundIndex}>
+                            {roundIndex}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                      {/* {console.log(filteredData)} */}
+                      {filteredData.map(([groupTime, rounds], index) => (
+                        <TableRow key={groupTime}>
+                          <TableCell>{filteredData.length - index}</TableCell>
+                          <TableCell style={{ whiteSpace: "nowrap" }}>
+                            {groupTime}
+                          </TableCell>
+
                           <TableCell align="center">
-                            <Checkbox
-                              checked={targetIndexes.includes(index)}
-                              onChange={() => handleCheckboxChange(index)}
+                            <Chip
+                              label={Object.values(rounds?.[12] ?? {})[0]}
                             />
                           </TableCell>
-                        );
-                      })}
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={4}>Current Value</TableCell>
-                      {report.length > 0 &&
-                        rows.map((row) => {
-                          const latestReport = report[0]; // ✅ NOT report.length - 1
-                          const cumulativeValue =
-                            latestReport.cumulative[row.key] ?? 0;
 
-                          return (
-                            <TableCell>
-                              <Chip
-                                key={row.key}
-                                label={diffMultiply(cumulativeValue, price)}
-                                size="small"
-                                color={
-                                  diffMultiply(cumulativeValue, price) > 2
-                                    ? "success"
-                                    : "error"
-                                }
-                              />
-                            </TableCell>
-                          );
-                        })}
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>S.No</TableCell>
-                      <TableCell>Time</TableCell>
-                      {/*  <TableCell>Data</TableCell>*/}
-                      <TableCell align="center">Before</TableCell>
-                      <TableCell align="center">Target</TableCell>
+                          <TableCell align="center">
+                            <Chip
+                              label={Object.values(rounds?.[11] ?? {})[0]}
+                            />
+                          </TableCell>
 
-                      {rows.map((row) => (
-                        <TableCell align="center" key={row.key}>
-                          {row.label}
-                        </TableCell>
+                          {rounds.map((row, index) => {
+                            if (index === 11 || index === 12) return null; // hide 6th and 7th
+
+                            const value = Object.values(row)[0];
+                            const tooltip = Object.keys(row)[0];
+
+                            return (
+                              <TableCell align="center" key={index}>
+                                <Tooltip title={tooltip}>
+                                  <Chip
+                                    label={value}
+                                    color={
+                                      value >= rangeVal
+                                        ? "success"
+                                        : value === 1
+                                          ? "default"
+                                          : "error"
+                                    }
+                                  />
+                                </Tooltip>
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
                       ))}
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-                    {filteredData.map(([groupTime, rounds], index) => (
-                      <TableRow key={groupTime}>
-                        <TableCell>{filteredData.length - index}</TableCell>
-                        <TableCell style={{ whiteSpace: "nowrap" }}>
-                          {groupTime}
-                        </TableCell>
-
-                        {/*  <TableCell sx={{ display: "flex", flexWrap: "wrap" }}>
-                          {rounds.map((item, i) => (
-                            <Tooltip key={i} title={Object.keys(item)[0]}>
-                              <Chip
-                                label={Object.values(item)[0]}
-                                sx={{ m: "2px" }}
-                              />
-                            </Tooltip>
-                          ))}
-                        </TableCell>*/}
-
-                        <TableCell align="center">
-                          <Chip label={Object.values(rounds?.[0] ?? {})[0]} />
-                        </TableCell>
-
-                        <TableCell align="center">
-                          <Chip label={Object.values(rounds?.[1] ?? {})[0]} />
-                        </TableCell>
-
-                        {rows.map((row) => {
-                          const value = Object.values(
-                            rounds?.[row.dataIndex] ?? {},
-                          )[0];
-                          const tooltip = Object.keys(
-                            rounds?.[row.dataIndex] ?? {},
-                          )[0];
-
-                          return (
-                            <TableCell align="center" key={row.key}>
-                              <Tooltip title={tooltip}>
-                                <Chip
-                                  label={value}
-                                  color={
-                                    value >= rangeVal
-                                      ? "success"
-                                      : value === 1
-                                        ? "default"
-                                        : "error"
-                                  }
-                                />
-                              </Tooltip>
-                            </TableCell>
-                          );
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <img src={noData} alt="no data" style={{ width: "20%" }} />
+                  </div>
+                )}
               </TableContainer>
             </Card>
           </Grid>

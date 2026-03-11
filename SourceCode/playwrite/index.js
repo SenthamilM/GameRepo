@@ -15,8 +15,13 @@ let page;
 
 /* ✅ CORRECT WAY TO GET AVIATOR IFRAME */
 async function getGameFrame() {
+  // const iframeHandle = await page.waitForSelector(
+  //   'iframe[src*="spribegaming.com/aviator"]',
+  //   { timeout: 0 },
+  // );
+  // Crash Game aviator
   const iframeHandle = await page.waitForSelector(
-    'iframe[src*="spribegaming.com/aviator"]',
+    'iframe[src*="crash.aviator.studio"]',
     { timeout: 0 },
   );
 
@@ -66,11 +71,11 @@ app.post("/click-button", async (req, res) => {
       /* 🔎 WAIT FOR PAYOUT CONTAINER */
       let container = null;
       for (let i = 0; i < 60; i++) {
-        container =
-          document.querySelector(".payouts-block") ||
-          document.querySelector('[class*="payouts"]') ||
-          document.querySelector('[class*="payout"]');
-
+        // container =
+        //   document.querySelector(".payouts-block") ||
+        //   document.querySelector('[class*="payouts"]') ||
+        //   document.querySelector('[class*="payout"]');
+        container = document.querySelector("._items_7l84e_35");
         if (container) break;
         await sleep(500);
       }
