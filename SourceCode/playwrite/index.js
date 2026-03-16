@@ -168,7 +168,7 @@ app.post("/bet-click", async (req, res) => {
       return res.json({ success: false, error: "Iframe not found" });
     }
 
-    const buttons = frame.locator("button.btn-success");
+    const buttons = frame.locator("button._button_9yqhb_21");
 
     // wait until at least one button exists
     await buttons.first().waitFor({ state: "visible", timeout: 15000 });

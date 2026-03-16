@@ -71,6 +71,7 @@ export default function App() {
     }
   };
   let lastFirstElement = null; // store the first element of the last API call
+  let currentElementgreater2 = null;
   const betTime = [
     {
       startTime: "12:45:00 PM",
@@ -98,6 +99,8 @@ export default function App() {
       index: [5],
     },
   ];
+
+  sessionStorage.setItem("Count", 1);
   const fetchRounds = async () => {
     // const today = new Date().toLocaleDateString("en-GB");
     try {
@@ -132,12 +135,22 @@ export default function App() {
         const ele1 = Number(
           Object.values(timeArray[timeArray.length - 2] || {})[0] || 0,
         );
+        const ele2 = Number(
+          Object.values(timeArray[timeArray.length - 3] || {})[0] || 0,
+        );
+        const ele3 = Number(
+          Object.values(timeArray[timeArray.length - 4] || {})[0] || 0,
+        );
+        const ele4 = Number(
+          Object.values(timeArray[timeArray.length - 5] || {})[0] || 0,
+        );
         const targetEle = Number(
           Object.values(timeArray[timeArray.length - 6] || {})[0] || 0,
         );
         const targetBeforeEle = Number(
           Object.values(timeArray[timeArray.length - 7] || {})[0] || 0,
         );
+
         const sampleData = {
           "10:16:57 AM": {
             target: 100,
@@ -158,34 +171,61 @@ export default function App() {
             ],
           },
         };
-        if (selectCollection == "NewGame") {
-          const getCompArr = timeArray.slice(-11);
-          const TargetSession = sessionStorage.getItem("Target");
-          const BeforeSession = sessionStorage.getItem("Before");
-          //const arrEle = [];
-          if (targetEle > 50) {
+        // const getCompArr = timeArray.slice(-11);
+        // const TargetSession = sessionStorage.getItem("Target");
+        // const BeforeSession = sessionStorage.getItem("Before");
+        const getCompArr = timeArray.slice(-11);
+
+        const TargetSession = sessionStorage.getItem("Target");
+        const BeforeSession = sessionStorage.getItem("Before");
+
+        const targetEleVal = TargetSession ? TargetSession.split(".")[0] : null;
+        const beforeSessionVal = BeforeSession
+          ? BeforeSession.split(".")[0]
+          : null;
+
+        const ele0Val = String(ele0).split(".")[0];
+        const ele1Val = String(ele1).split(".")[0];
+
+        if (selectCollection === "NewGame") {
+          // Save target
+          if (targetEleVal == "3") {
             sessionStorage.setItem("Target", targetEle);
             sessionStorage.setItem("Before", targetBeforeEle);
           }
-          if (targetEle === 1) {
-            sessionStorage.removeItem("Target");
-            sessionStorage.removeItem("Before");
-          }
-          if (
-            String(targetBeforeEle).split(".")[0] ===
-            BeforeSession.split(".")[0]
-          ) {
+          //  else if (targetEle === 1) {
+          //   sessionStorage.removeItem("Target");
+          //   sessionStorage.removeItem("Before");
+          // }
+
+          // Data passer
+          if (targetEleVal == "3") {
             getCompArr.push({ Target: TargetSession });
             getCompArr.push({ before: BeforeSession });
             newGame(today, getCompArr);
             console.log("New Data");
           }
         }
-        /// Onclick condition Nee Game
 
+        // Onclick condition New Game
+        const currentFirst = Object.values(timeArray[timeArray.length - 1])[0];
+        if (lastFirstElement !== currentFirst) {
+          console.log("targetEle - " + ele1Val, "targetEleBefore - " + ele1);
+          if (
+            Number(ele1) > 2 &&
+            ele0Val === 3
+            // beforeSessionVal &&
+            // ele0Val === beforeSessionVal &&
+            // currentElementgreater2 >= 2
+          ) {
+            handleClick();
+            console.log("1st Trigger function call");
+          }
+          currentElementgreater2 = currentFirst;
+          lastFirstElement = currentFirst;
+        }
         /// Onclick condition THreeNUmber
 
-        const currentFirst = Object.values(timeArray[timeArray.length - 1])[0];
         // const current6 = Object.values(timeArray[timeArray.length - 5])[0];
         // const current13 = Object.values(timeArray[timeArray.length - 12])[0];
         // //Try
@@ -324,20 +364,31 @@ export default function App() {
       return (
         typeof beforeFirst === "number" &&
         typeof targetFirst === "number" &&
-        //&&
-        // // high to low
-        // beforeFirst >= targetFirst &&
-        // beforeFirst >= 8 &&
-        // beforeFirst <= 50 &&
-        // targetFirst < 1.6
-
         /// try
         targetFirst >= 1.1
         // beforeFirst >= 8
       );
     });
   }, [sortedData]);
+  const ratioData = useMemo(() => {
+    const counts = Array(13).fill(0);
 
+    filteredData.forEach(([, rounds]) => {
+      rounds.forEach((obj, index) => {
+        const [key, value] = Object.entries(obj)[0] || [];
+
+        if (!key || key === "Target" || key === "before") return;
+
+        const num = Number(value);
+
+        counts[index] += num > 2 ? 1 : -1;
+      });
+    });
+
+    return counts;
+  }, [filteredData]);
+
+  //console.log(ratio);
   // Handling select day
   const [docIds, setDocIds] = useState([]);
   async function getAllDocIds() {
@@ -485,6 +536,11 @@ export default function App() {
       labelStart: 10,
     },
     ThreeNumber: {
+      startIndex: 2, // 2nd
+      endIndex: 16, // 7th
+      labelStart: 2,
+    },
+    NewGame: {
       startIndex: 2, // 2nd
       endIndex: 16, // 7th
       labelStart: 2,
@@ -926,7 +982,7 @@ export default function App() {
         <Grid container size={{ xs: 12, md: 12, height: "50vh" }}>
           <Grid container size={{ xs: 12, md: 12 }}>
             <Card sx={{ marginBottom: "15px", width: "100%" }}>
-              <TableContainer component={Paper}>
+              <TableContainer component={Paper} sx={{ height: "100%" }}>
                 <Toolbar
                   sx={[
                     {
@@ -960,7 +1016,18 @@ export default function App() {
                     </TableHead>
 
                     <TableBody>
-                      {/* {console.log(filteredData)} */}
+                      <TableRow>
+                        <TableCell colSpan={4}></TableCell>
+                        {ratioData.map((val, index) => {
+                          if (index === 11 || index === 12) return null;
+                          return (
+                            <TableCell style={{ textAlign: "center" }}>
+                              {val}
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                      {/* Retrive Data */}
                       {filteredData.map(([groupTime, rounds], index) => (
                         <TableRow key={groupTime}>
                           <TableCell>{filteredData.length - index}</TableCell>
