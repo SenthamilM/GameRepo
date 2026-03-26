@@ -139,12 +139,14 @@ export default function App() {
         const ele2 = Number(
           Object.values(timeArray[timeArray.length - 3] || {})[0] || 0,
         );
+        const ele2Val = Number(String(ele2).split(".")[0]) % 5;
         const ele3 = Number(
           Object.values(timeArray[timeArray.length - 4] || {})[0] || 0,
         );
         const ele4 = Number(
           Object.values(timeArray[timeArray.length - 5] || {})[0] || 0,
         );
+
         const ele5 = Number(
           Object.values(timeArray[timeArray.length - 6] || {})[0] || 0,
         );
@@ -193,9 +195,24 @@ export default function App() {
             history(today, getCompArr);
             console.log("Histroy function call");
           }
-          if (ele2 > 5 && ele3 < 2 && ele0 < 5) {
-            // handleClick();
-            console.log("1st Trigger function call");
+
+          //    targetFirst < 100 &&
+          // beforeFirst < 2 &&
+          // tar8 < 10 &&
+          // tar8 > 1.1 &&
+          // targetFirstVal != 0
+          if (
+            ele2 > 5 &&
+            ele2 < 100 &&
+            ele3 < 2 &&
+            ele0 < 10 &&
+            ele0 > 1.1 &&
+            ele2Val != 0
+          ) {
+            setTimeout(() => {
+              handleClick();
+              console.log("1st Trigger function call");
+            }, 2000); //  2 seconds delay
           }
           currentElementgreater2 = currentFirst;
           lastFirstElement = currentFirst;
@@ -338,6 +355,7 @@ export default function App() {
       const targetFirst = Object.values(rounds?.[5] ?? {})[0];
       const tar3 = Object.values(rounds?.[3] ?? {})[0];
       const tar8 = Object.values(rounds?.[7] ?? {})[0];
+      const targetFirstVal = Number(String(targetFirst).split(".")[0]) % 5;
 
       return (
         typeof beforeFirst === "number" &&
@@ -345,8 +363,8 @@ export default function App() {
         targetFirst < 100 &&
         beforeFirst < 2 &&
         tar8 < 10 &&
-        tar8 > 1.1
-
+        tar8 > 1.1 &&
+        targetFirstVal != 0
         /// try
         // beforeFirst < 10 &&
         // targetFirst < 10 &&
