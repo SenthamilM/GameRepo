@@ -41,6 +41,7 @@ import Avatar from "@mui/material/Avatar";
 import LinearProgress from "@mui/material/LinearProgress";
 import StepContent from "@mui/material/StepContent";
 import { threeRound } from "./threeDataService";
+import { history } from "./historyservice";
 import { PieChart } from "@mui/x-charts/PieChart";
 import InsertInvitationIcon from "@mui/icons-material/InsertInvitation";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -144,6 +145,12 @@ export default function App() {
         const ele4 = Number(
           Object.values(timeArray[timeArray.length - 5] || {})[0] || 0,
         );
+        const ele5 = Number(
+          Object.values(timeArray[timeArray.length - 6] || {})[0] || 0,
+        );
+        const ele6 = Number(
+          Object.values(timeArray[timeArray.length - 7] || {})[0] || 0,
+        );
         const targetEle = Number(
           Object.values(timeArray[timeArray.length - 6] || {})[0] || 0,
         );
@@ -151,80 +158,49 @@ export default function App() {
           Object.values(timeArray[timeArray.length - 7] || {})[0] || 0,
         );
 
-        const sampleData = {
-          "10:16:57 AM": {
-            target: 100,
-            before: 2.2,
-            data: [
-              {
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-              },
-              {
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-                "10:16:57 AM": 44.42,
-              },
-            ],
-          },
-        };
-        // const getCompArr = timeArray.slice(-11);
-        // const TargetSession = sessionStorage.getItem("Target");
-        // const BeforeSession = sessionStorage.getItem("Before");
         const getCompArr = timeArray.slice(-11);
 
         const TargetSession = sessionStorage.getItem("Target");
         const BeforeSession = sessionStorage.getItem("Before");
 
-        const targetEleVal = TargetSession ? TargetSession.split(".")[0] : null;
         const beforeSessionVal = BeforeSession
           ? BeforeSession.split(".")[0]
           : null;
-
-        const ele0Val = String(ele0).split(".")[0];
-        const ele1Val = String(ele1).split(".")[0];
+        const targetEleVal = String(targetEle).split(".")[0];
+        const targetBeforeVal = String(targetBeforeEle).split(".")[0];
+        const ele0Val = Number(String(ele0).split(".")[0]);
 
         if (selectCollection === "NewGame") {
-          // Save target
-          if (targetEleVal == "3") {
-            sessionStorage.setItem("Target", targetEle);
-            sessionStorage.setItem("Before", targetBeforeEle);
-          }
-          //  else if (targetEle === 1) {
-          //   sessionStorage.removeItem("Target");
-          //   sessionStorage.removeItem("Before");
-          // }
-
           // Data passer
-          if (targetEleVal == "3") {
-            getCompArr.push({ Target: TargetSession });
-            getCompArr.push({ before: BeforeSession });
+          if (targetEle >= 5) {
+            getCompArr.push({ Target: targetEle });
+            getCompArr.push({ before: targetBeforeEle });
             newGame(today, getCompArr);
             console.log("New Data");
+          }
+          if (Number(targetEleVal) > 500) {
+            threeRound(today, getCompArr);
           }
         }
 
         // Onclick condition New Game
         const currentFirst = Object.values(timeArray[timeArray.length - 1])[0];
         if (lastFirstElement !== currentFirst) {
-          console.log("targetEle - " + ele1Val, "targetEleBefore - " + ele1);
-          if (
-            Number(ele1) > 2 &&
-            ele0Val === 3
-            // beforeSessionVal &&
-            // ele0Val === beforeSessionVal &&
-            // currentElementgreater2 >= 2
-          ) {
-            handleClick();
+          //beforeFirst < 2 &&
+          // tar8 < 10 &&
+          // tar8 > 1.1
+          if (ele4 > 5 && ele5 < 2 && ele1 < 10 && ele1 > 1.1) {
+            history(today, getCompArr);
+            console.log("Histroy function call");
+          }
+          if (ele2 > 5 && ele3 < 2 && ele0 < 5) {
+            // handleClick();
             console.log("1st Trigger function call");
           }
           currentElementgreater2 = currentFirst;
           lastFirstElement = currentFirst;
         }
-        /// Onclick condition THreeNUmber
+        /// Onclick condition ThreeNUmber
 
         // const current6 = Object.values(timeArray[timeArray.length - 5])[0];
         // const current13 = Object.values(timeArray[timeArray.length - 12])[0];
@@ -249,7 +225,7 @@ export default function App() {
 
               if (targetFirst[0] > 100) {
                 //console.log("Trigger:", index + 2, targetFirst[0]);
-                handleClick();
+                // handleClick();
               }
               // if (current13 > 100 && current6 > 2) {
               //   // 13 Based - 6 Target
@@ -358,15 +334,23 @@ export default function App() {
   const filteredData = useMemo(() => {
     //console.log(sortedData);
     return sortedData.filter(([, rounds]) => {
-      const beforeFirst = Object.values(rounds?.[0] ?? {})[0];
-      const targetFirst = Object.values(rounds?.[1] ?? {})[0];
+      const beforeFirst = Object.values(rounds?.[4] ?? {})[0];
+      const targetFirst = Object.values(rounds?.[5] ?? {})[0];
+      const tar3 = Object.values(rounds?.[3] ?? {})[0];
+      const tar8 = Object.values(rounds?.[7] ?? {})[0];
 
       return (
         typeof beforeFirst === "number" &&
         typeof targetFirst === "number" &&
+        targetFirst < 100 &&
+        beforeFirst < 2 &&
+        tar8 < 10 &&
+        tar8 > 1.1
+
         /// try
-        targetFirst >= 1.1
-        // beforeFirst >= 8
+        // beforeFirst < 10 &&
+        // targetFirst < 10 &&
+        // tar3 < 5
       );
     });
   }, [sortedData]);
@@ -386,6 +370,11 @@ export default function App() {
     });
 
     return counts;
+  }, [filteredData]);
+  const resultData = useMemo(() => {
+    filteredData.forEach(([, rounds]) => {
+      //console.log(rounds);
+    });
   }, [filteredData]);
 
   //console.log(ratio);
@@ -452,9 +441,13 @@ export default function App() {
   };
   // Continused data
   const DrawerList = (
-    <Box sx={{ height: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+    <Box
+      sx={{ height: "auto", backgroundColor: "#1a1a1a" }}
+      role="presentation"
+      onClick={toggleDrawer(false)}
+    >
       <div
-        style={{ flex: "6 1 0%", padding: 20, overflowY: "auto", width: "50%" }}
+        style={{ flex: "6 1 0%", padding: 20, overflowY: "auto", width: "70%" }}
       >
         {rounds.length === 0 && <div>No data yet</div>}
 
@@ -488,7 +481,7 @@ export default function App() {
                         //flex: "0 0 9%",
                         padding: "10px",
 
-                        flex: "0 0 calc(8% - 8px)",
+                        flex: "0 0 calc((100% - 10 * 12px) / 13)",
                       }}
                       className={isGreen ? "green" : ""}
                     >
@@ -497,13 +490,23 @@ export default function App() {
                         const isInt = Number.isInteger(value);
 
                         return isInt ? (
-                          <b>{value}</b>
+                          <small>{value}</small>
                         ) : (
                           <>
-                            {value}
-                            <small style={{ marginLeft: "6px", color: "gray" }}>
+                            {value < 2 ? (
+                              <small style={{ color: "skyblue" }}>
+                                {value}
+                              </small>
+                            ) : value < 5 ? (
+                              <small style={{ color: "purple" }}>{value}</small>
+                            ) : value < 10 ? (
+                              <small style={{ color: "pink" }}>{value}</small>
+                            ) : (
+                              <small style={{ color: "green" }}>{value}</small>
+                            )}
+                            {/* <small style={{ marginLeft: "6px", color: "gray" }}>
                               {value > 100 ? "->" : ""}
-                            </small>
+                            </small> */}
                           </>
                         );
                       })()}
@@ -920,6 +923,7 @@ export default function App() {
                 <MenuItem value="Onepointone">Onepointone</MenuItem>
                 <MenuItem value="ThreeNumber">ThreeNumber</MenuItem>
                 <MenuItem value="NewGame">NewGame</MenuItem>
+                <MenuItem value="history">History</MenuItem>
               </Select>
             </FormControl>
 
@@ -968,6 +972,7 @@ export default function App() {
         open={open}
         anchor="bottom"
         onClose={toggleDrawer(false)}
+        sx={{ backgroundColor: "#1a1a1a" }}
       >
         {DrawerList}
       </SwipeableDrawer>
@@ -975,6 +980,7 @@ export default function App() {
         open={openTotal}
         anchor="right"
         onClose={toggleDrawerTotal(false)}
+        sx={{ backgroundColor: "#1a1a1a" }}
       >
         {DrawlistTotal}
       </SwipeableDrawer>
@@ -1070,6 +1076,26 @@ export default function App() {
                               </TableCell>
                             );
                           })}
+
+                          <TableCell align="center">
+                            {/* <Chip
+                                label={(() => {
+                                  const getVal = (i) =>
+                                    Number(
+                                      Object.values(rounds?.[i] ?? {})[0],
+                                    ) || 0;
+
+                                  const a = getVal(index);
+                                  const b = getVal(index + 3);
+
+                                  const result = a * b;
+
+                                  return a.toFixed(2); // format like 2.22
+                                })()}
+                              /> */}
+
+                            {/* {rounds.map((i) => Object.values(i)[0])} */}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
