@@ -41,6 +41,7 @@ import Avatar from "@mui/material/Avatar";
 import LinearProgress from "@mui/material/LinearProgress";
 import StepContent from "@mui/material/StepContent";
 import { threeRound } from "./threeDataService";
+import { fiveDot } from "./fiveDotservice";
 import { history } from "./historyservice";
 import { PieChart } from "@mui/x-charts/PieChart";
 import InsertInvitationIcon from "@mui/icons-material/InsertInvitation";
@@ -172,7 +173,11 @@ export default function App() {
         const targetBeforeVal = String(targetBeforeEle).split(".")[0];
         const ele0Val = Number(String(ele0).split(".")[0]);
 
-        if (selectCollection === "NewGame") {
+        if (
+          selectCollection === "NewGame" ||
+          selectCollection === "history" ||
+          selectCollection === "FiveDot"
+        ) {
           // Data passer
           if (targetEle >= 5) {
             getCompArr.push({ Target: targetEle });
@@ -182,6 +187,10 @@ export default function App() {
           }
           if (Number(targetEleVal) > 500) {
             threeRound(today, getCompArr);
+          }
+          if (targetEle.toString().includes("5")) {
+            fiveDot(today, getCompArr);
+            console.log("Five Dot Data");
           }
         }
 
@@ -210,7 +219,7 @@ export default function App() {
             ele2Val != 0
           ) {
             setTimeout(() => {
-              handleClick();
+              //handleClick();
               console.log("1st Trigger function call");
             }, 2000); //  2 seconds delay
           }
@@ -356,15 +365,40 @@ export default function App() {
       const tar3 = Object.values(rounds?.[3] ?? {})[0];
       const tar8 = Object.values(rounds?.[7] ?? {})[0];
       const targetFirstVal = Number(String(targetFirst).split(".")[0]) % 5;
-
+      //
+      const tar0 = Object.values(rounds?.[0] ?? {})[0];
+      const tar1 = Object.values(rounds?.[1] ?? {})[0];
+      const tar2 = Object.values(rounds?.[2] ?? {})[0];
+      const tar4 = Object.values(rounds?.[4] ?? {})[0];
+      const tar5 = Object.values(rounds?.[5] ?? {})[0];
+      const tar7 = Object.values(rounds?.[7] ?? {})[0];
+      const IsTar0 = tar0.toString().includes("5");
+      const IsTar1 = tar1.toString().includes("5");
+      const IsTar2 = tar2.toString().includes("5");
+      const IsTar3 = tar3.toString().includes("5");
+      const IsTar4 = tar4.toString().includes("5");
+      const IsTar5 = tar5.toString().startsWith("5");
+      const IsTar7 = tar7.toString().includes("5");
       return (
         typeof beforeFirst === "number" &&
         typeof targetFirst === "number" &&
-        targetFirst < 100 &&
-        beforeFirst < 2 &&
-        tar8 < 10 &&
-        tar8 > 1.1 &&
-        targetFirstVal != 0
+        IsTar5
+        // &&
+        // tar4 > 2
+        // ///
+        // !IsTar0 &&
+        // !IsTar1 &&
+        // !IsTar2 &&
+        // !IsTar3 &&
+        // !IsTar4 &&
+        // !IsTar7
+
+        // //
+        // targetFirst < 100 &&
+        // beforeFirst < 2 &&
+        // tar8 < 10 &&
+        // tar8 > 1.1 &&
+        // targetFirstVal != 0
         /// try
         // beforeFirst < 10 &&
         // targetFirst < 10 &&
@@ -911,6 +945,7 @@ export default function App() {
           <Box
             sx={{
               display: "flex",
+              flexWrap: "wrap",
               alignItems: "center",
             }}
           >
@@ -942,6 +977,7 @@ export default function App() {
                 <MenuItem value="ThreeNumber">ThreeNumber</MenuItem>
                 <MenuItem value="NewGame">NewGame</MenuItem>
                 <MenuItem value="history">History</MenuItem>
+                <MenuItem value="FiveDot">FiveDot</MenuItem>
               </Select>
             </FormControl>
 
