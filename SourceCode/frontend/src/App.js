@@ -172,13 +172,18 @@ export default function App() {
         const targetEleVal = String(targetEle).split(".")[0];
         const targetBeforeVal = String(targetBeforeEle).split(".")[0];
         const ele0Val = Number(String(ele0).split(".")[0]);
-
+        //const IsFive = targetEle.toString().includes("5");
+        const IsFive = targetEle.toString().startsWith("5");
         if (
           selectCollection === "NewGame" ||
           selectCollection === "history" ||
           selectCollection === "FiveDot"
         ) {
           // Data passer
+          if (IsFive) {
+            fiveDot(today, getCompArr);
+            console.log("Five Dot Data");
+          }
           if (targetEle >= 5) {
             getCompArr.push({ Target: targetEle });
             getCompArr.push({ before: targetBeforeEle });
@@ -187,10 +192,6 @@ export default function App() {
           }
           if (Number(targetEleVal) > 500) {
             threeRound(today, getCompArr);
-          }
-          if (targetEle.toString().includes("5")) {
-            fiveDot(today, getCompArr);
-            console.log("Five Dot Data");
           }
         }
 
